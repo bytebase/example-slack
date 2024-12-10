@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     // Process asynchronously and return immediate acknowledgment
     processAction(payload).catch(console.error);
     return new Response(
-      JSON.stringify({ response_type: 'in_channel', text: 'Processing your request...' }), 
+      JSON.stringify({ response_type: 'in_channel', replace_original: false, text: 'Processing your request...' }), 
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
 
@@ -55,17 +55,15 @@ async function processAction(payload: SlackPayload) {
 
     if (!response.ok) throw new Error(`Failed to ${action} request: ${response.statusText}`);
 
-    await slack.chat.update({
+    await slack.chat.postMessage({
       channel: payload.channel.id,
-      ts: payload.message.ts,
       text: `${isApproval ? 'Request approved' : 'Request denied'} by <@${payload.user.id}>`
     });
 
   } catch (error) {
     console.error('Error in processAction:', error);
-    await slack.chat.update({
+    await slack.chat.postMessage({
       channel: payload.channel.id,
-      ts: payload.message.ts,
       text: '❌ Failed to process the request. Please try again or contact support.'
     });
   }
