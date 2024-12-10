@@ -53,18 +53,18 @@ async function processAction(payload: SlackPayload) {
       }
     );
 
-    if (!response.ok) throw new Error(`Failed to ${action} request: ${response.statusText}`);
+    if (!response.ok) throw new Error(`⚠️ Failed to ${action} request: ${response.statusText}`);
 
     await slack.chat.postMessage({
       channel: payload.channel.id,
-      text: `${isApproval ? 'Request approved' : 'Request denied'} by <@${payload.user.id}>`
+      text: ` ${isApproval ? '✅ Request approved' : '❌ Request denied'} by <@${payload.user.id}>`
     });
 
   } catch (error) {
     console.error('Error in processAction:', error);
     await slack.chat.postMessage({
       channel: payload.channel.id,
-      text: '❌ Failed to process the request. Please try again or contact support.'
+      text: '⚠️ Failed to process the request. Please try again or contact support.'
     });
   }
 } 
