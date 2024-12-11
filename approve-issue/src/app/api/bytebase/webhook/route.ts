@@ -6,6 +6,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log('Received Bytebase webhook payload:', body);
 
+
     const blocks: BytebaseBlock[] = body.blocks;
     console.log('Parsed blocks:', blocks);
 
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
       throw new Error('Required fields missing from webhook payload');
     }
 
-    await sendAccessRequestNotification({
+    sendAccessRequestNotification({
       taskId: `${projectId}|${issueId}`,
       requester: issueCreator,
       database: issueTitle,
@@ -42,10 +43,10 @@ export async function POST(req: Request) {
       description: `Issue URL: ${issueUrl}`
     });
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    return new Response('ok', {
+      status: 200
     });
+
   } catch (error) {
     console.error('Error processing webhook:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
