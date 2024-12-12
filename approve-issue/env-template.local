@@ -1,0 +1,6 @@
+SLACK_BOT_TOKEN=xoxb-26xxxxxxxx1-81xxxxx09-mgxxxxxxxfki
+SLACK_CHANNEL_ID=C0xxxxxxP5  # Your actual channel ID
+
+BB_HOST=https://jxxxxxx-8080.asse.devtunnels.ms
+BB_SERVICE_ACCOUNT=api-sample@service.bytebase.com
+BB_SERVICE_KEY=bbs_xxxxxxxxxxxx
