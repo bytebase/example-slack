@@ -3,6 +3,30 @@ import { DataAccessRequest } from '@/types/bytebase';
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 
+async function findBotChannels(): Promise<string[]> {
+  try {
+    const result = await slack.conversations.list({
+      types: 'public_channel,private_channel',
+      exclude_archived: true,
+      limit: 1000
+    });
+    
+    // Filter channels where the bot is a member
+    const botChannels = result.channels?.filter(
+      (channel) => channel.is_member
+    ).map(channel => channel.id) || [];
+    
+    if (botChannels.length === 0) {
+      throw new Error('Bot is not a member of any channels');
+    }
+    
+    return botChannels;
+  } catch (error) {
+    console.error('Error finding bot channels:', error);
+    throw error;
+  }
+}
+
 export async function sendAccessRequestNotification(request: DataAccessRequest) {
   console.log('Preparing Slack notification with request:', request);
 
@@ -77,8 +101,12 @@ export async function sendAccessRequestNotification(request: DataAccessRequest) 
     ]
   });
 
+  const botChannels = await findBotChannels();
+  // Use the first channel where the bot is a member
+  const channelId = botChannels[0];
+  
   return await slack.chat.postMessage({
-    channel: process.env.SLACK_CHANNEL_ID!,
+    channel: channelId,
     blocks,
     text: `New SQL Editor access request from ${request.requester}`
   });
