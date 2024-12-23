@@ -91,9 +91,76 @@ export async function POST(req: Request) {
       return new Response('', { status: 200 });
     }
 
-    return new Response('', { status: 200 });
+    // Handle form submission
+    if (payload.type === 'view_submission' && payload.view.callback_id === 'database_access_request') {
+      const values = payload.view.state.values;
+      
+      // Quick validation
+      const projectId = values.project_block?.project_input?.selected_option?.value;
+      const databaseId = values.database_block?.database_input?.selected_option?.value;
+      const reason = values.reason_block?.reason_input?.value;
+      const expiration = values.expiration_block?.expiration_input?.selected_option?.value;
+
+      // Validate required fields
+      const errors: Record<string, string> = {};
+      if (!projectId) errors.project_block = 'Please select a project';
+      if (!databaseId) errors.database_block = 'Please select a database';
+      if (!reason) errors.reason_block = 'Please provide a reason for access';
+      if (!expiration) errors.expiration_block = 'Please select an expiration period';
+
+      if (Object.keys(errors).length > 0) {
+        return Response.json({
+          response_action: 'errors',
+          errors
+        });
+      }
+
+      // If validation passes, process asynchronously and return immediately
+      queueMicrotask(async () => {
+        try {
+          // Extract and clean requester email
+          const requesterBlock = payload.view.blocks.find(block => block.block_id === 'requester_block');
+          const emailMatch = requesterBlock?.text?.text?.match(/\*Requester:\* <mailto:(.*?)\|.*>/);
+          const requesterEmail = emailMatch ? emailMatch[1] : undefined;
+
+          // Send confirmation message to user
+          await slack.chat.postMessage({
+            channel: payload.user.id,
+            text: `Your database access request has been submitted:\n• Project: ${projectId}\n• Database: ${databaseId}\n• Expiration: ${expiration} days\n• Reason: ${reason}\n\nWe'll notify you once it's processed.`
+          });
+
+          console.log('Submission processed successfully:', {
+            projectId,
+            databaseId,
+            reason,
+            expiration,
+            requesterEmail
+          });
+
+        } catch (error) {
+          console.error('Error processing submission:', error);
+          await slack.chat.postMessage({
+            channel: payload.user.id,
+            text: 'There was an error processing your request. Please try again or contact support.'
+          });
+        }
+      });
+
+      // Return immediate success response
+      return Response.json({
+        response_action: 'clear'
+      });
+    }
+
+    return Response.json({ ok: true });
+
   } catch (error) {
     console.error('Error handling interaction:', error);
-    return new Response('Error processing interaction', { status: 500 });
+    return Response.json({
+      response_action: 'errors',
+      errors: {
+        general: 'An unexpected error occurred'
+      }
+    });
   }
 } 

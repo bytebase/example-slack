@@ -21,8 +21,14 @@ export async function generateBBToken() {
 /* Fetch projects list */
 export async function fetchProjectList() {
     try {
+        console.log('Fetching projects...');
         const token = await generateBBToken();
-        const res = await fetch(`${process.env.BB_HOST}/v1/projects`, {
+        console.log('Got BB token:', token ? 'Token received' : 'No token');
+
+        const url = `${process.env.BB_HOST}/v1/projects`;
+        console.log('Fetching from URL:', url);
+
+        const res = await fetch(url, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -30,16 +36,24 @@ export async function fetchProjectList() {
             cache: 'no-store'
         });
 
+        console.log('Response status:', res.status);
+        
         if (!res.ok) {
-            throw new Error(`Failed to fetch projects: ${res.statusText}`);
+            const errorText = await res.text();
+            console.error('Error response:', errorText);
+            throw new Error(`Failed to fetch projects: ${res.statusText}. Response: ${errorText}`);
         }
 
         const data = await res.json();
-        console.log('data ===============', data);
-        return data.projects?.map(project => ({
-            id: project.name.split('/')[1],
-            name: project.title
+        console.log('Projects data:', JSON.stringify(data, null, 2));
+
+        const projects = data.projects?.map(project => ({
+            id: project.projectId || project.name.split('/')[1],
+            name: project.title || project.name
         })) || [];
+
+        console.log('Processed projects:', JSON.stringify(projects, null, 2));
+        return projects;
     } catch (error) {
         console.error('Error fetching projects:', error);
         // Return dummy data for testing
