@@ -1,4 +1,5 @@
 import { WebClient } from '@slack/web-api';
+import { fetchProjectList } from '@/app/api/utils';
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 
@@ -51,6 +52,8 @@ export async function POST(req: Request) {
 
     const requesterEmail = userInfo.user?.profile?.email || 'Unknown';
     const projects = await fetchProjectList();
+
+    console.log('projects ===============', projects);
 
     // Update the modal with full content
     await slack.views.update({
@@ -210,16 +213,6 @@ export async function POST(req: Request) {
       text: `Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`
     }), { status: 500 });
   }
-}
-
-// Function to fetch the list of projects
-async function fetchProjectList() {
-  // Dummy data for projects
-  return [
-    { id: 'project_a', name: 'Project A' },
-    { id: 'project_b', name: 'Project B' },
-    { id: 'project_c', name: 'Project C' }
-  ];
 }
 
 // Function to fetch databases for a given project
