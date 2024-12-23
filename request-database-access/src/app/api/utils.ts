@@ -51,6 +51,9 @@ export async function fetchProjectList() {
     }
 }
 
+type DatabaseList = { id: string; name: string; }[];
+type DatabaseMap = { [key: string]: DatabaseList };
+
 /* Fetch databases for a project */
 export async function fetchDatabasesForProject(projectId: string) {
     try {
@@ -71,14 +74,14 @@ export async function fetchDatabasesForProject(projectId: string) {
 
         console.log('fetchDatabasesForProject data ===============', data);
 
-        return data.instances?.map(db => ({
-            id: db.instanceId || db.id,
-            name: db.title || db.name
+        return data.databases?.map(db => ({
+            id: db.name,
+            name: db.name
         })) || [];
     } catch (error) {
         console.error('Error fetching databases:', error);
         // Return dummy data for testing
-        const databases = {
+        const databases: DatabaseMap = {
             project_a: [
                 { id: 'db1', name: 'Database 1' },
                 { id: 'db2', name: 'Database 2' }

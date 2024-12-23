@@ -78,9 +78,9 @@ export async function POST(req: Request) {
             }
           },
           {
-            type: 'input',
+            type: 'actions',
             block_id: 'project_block',
-            element: {
+            elements: [{
               type: 'static_select',
               action_id: 'project_input',
               placeholder: {
@@ -94,11 +94,7 @@ export async function POST(req: Request) {
                 },
                 value: project.id
               }))
-            },
-            label: {
-              type: 'plain_text',
-              text: 'Project'
-            }
+            }]
           },
           {
             type: 'input',
