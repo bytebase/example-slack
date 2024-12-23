@@ -20,9 +20,6 @@ export async function POST(req: Request) {
       }), { status: 400 });
     }
 
-    // Log the time when the trigger_id is received
-    console.log('Trigger ID received at:', new Date().toISOString());
-
     // Open the modal immediately with a loading state
     const modalResponse = await slack.views.open({
       trigger_id: triggerId.toString(),
@@ -44,9 +41,14 @@ export async function POST(req: Request) {
       }
     });
 
-    // After modal is opened, fetch the data and update the view
-    const viewId = modalResponse.view.id;
+    // After modal is opened, fetch the data
+    const viewId = modalResponse.view?.id;
     const userInfo = await slack.users.info({ user: userId.toString() });
+
+
+    console.log('userInfo ===============', userInfo);
+
+
     const requesterEmail = userInfo.user?.profile?.email || 'Unknown';
     const projects = await fetchProjectList();
 

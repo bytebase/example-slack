@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const body = await req.text();
     const payload = JSON.parse(new URLSearchParams(body).get('payload') || '');
 
-    console.log('submit form Payload ===============', payload);
+    console.log('submit form Payload===', payload);
     
     if (payload.type !== 'view_submission' || payload.view.callback_id !== 'database_access_request') {
       return Response.json({ ok: true });
